@@ -2,6 +2,8 @@
 
 A lightweight URL shortener service built with FastAPI and SQLite, featuring automatic URL expiration and a simple management interface.
 
+This project was Vibe-coded into existence using AI, Copilot and Claude :)
+
 ## Features
 
 - Create shortened URLs with optional custom codes
