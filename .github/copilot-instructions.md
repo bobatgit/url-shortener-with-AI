@@ -57,6 +57,8 @@ url-shortener/
 │   └── utils/
 │       ├── __init__.py
 │       └── url_utils.py     # URL generation and validation utilities
+│       └── security.py      # URL and shortcode security validation with re
+│       └── rate_limit.py    # URL rate limiter to prevent abuse
 ├── static/
 │   ├── css/
 │   │   └── styles.css       # Custom styles beyond Bulma
@@ -66,10 +68,6 @@ url-shortener/
 │   ├── base.html            # Base template with common elements
 │   ├── index.html           # Homepage with shortening form
 │   └── manage.html          # URL management interface
-├── tests/
-│   ├── __init__.py
-│   ├── test_api.py          # API endpoint tests
-│   └── test_utils.py        # Utility function tests
 ├── data/
 │   └── urls.db              # SQLite database file
 ├── .dockerignore

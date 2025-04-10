@@ -1,30 +1,45 @@
-from fastapi import APIRouter, Depends, Request, BackgroundTasks
+from fastapi import APIRouter, Depends, Request, BackgroundTasks, HTTPException
 from sqlalchemy.orm import Session
 from ..database import URL, Setting, get_session
 from ..models import URLResponse, Setting, SettingUpdate
 from ..errors import URLNotFoundError, InvalidSettingError
 from ..utils.cleanup import cleanup_expired_urls
 import logging
+from app.database import get_db
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
+manage_router = APIRouter(prefix="/manage")
+
+@manage_router.get("/urls")
+async def list_urls():
+    with get_db() as db:
+        urls = db.execute("SELECT * FROM urls ORDER BY created_at DESC").fetchall()
+        return [dict(url) for url in urls]
+
+@manage_router.delete("/urls/{short_code}")
+async def delete_url(short_code: str):
+    with get_db() as db:
+        result = db.execute("DELETE FROM urls WHERE short_code = ?", (short_code,))
+        db.commit()
+        if result.rowcount == 0:
+            raise HTTPException(status_code=404, detail="URL not found")
+        return {"message": "URL deleted"}
+
 @router.get("/urls/", response_model=list[URLResponse])
-async def list_urls(request: Request, session: Session = Depends(get_session)):
-    logger.info("Listing all URLs")
+async def list_urls(session: Session = Depends(get_session)):
     urls = session.query(URL).order_by(URL.created_at.desc()).all()
     return urls
 
 @router.delete("/urls/{short_code}")
-async def delete_url(request: Request, short_code: str, session: Session = Depends(get_session)):
+async def delete_url(short_code: str, session: Session = Depends(get_session)):
     url = session.query(URL).filter(URL.short_code == short_code).first()
     if not url:
-        logger.warning(f"Attempted to delete non-existent URL: {short_code}")
-        raise URLNotFoundError(short_code)
+        raise HTTPException(status_code=404, detail="URL not found")
     
     session.delete(url)
     session.commit()
-    logger.info(f"Deleted URL: {short_code}")
     return {"message": "URL deleted successfully"}
 
 @router.post("/cleanup")

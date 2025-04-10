@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div x-data="{ result: null, error: null }">
+    <h1 class="title">Shorten Your URL</h1>
+    
+    <form @submit.prevent="submitForm" class="box">
+        <div class="field">
+            <label class="label">URL to Shorten</label>
+            <div class="control">
+                <input class="input" type="url" name="url" required placeholder="https://example.com">
+            </div>
+        </div>
+
+        <div class="field">
+            <label class="label">Custom Code (Optional)</label>
+            <div class="control">
+                <input class="input" type="text" name="custom_code" placeholder="your-custom-code">
+            </div>
+        </div>
+
+        <div class="field">
+            <button class="button is-primary" type="submit">
+                Shorten URL
+            </button>
+        </div>
+    </form>
+
+    <div x-show="result" class="notification is-success">
+        <p>Your shortened URL:</p>
+        <p class="has-text-weight-bold" x-text="result"></p>
+    </div>
+
+    <div x-show="error" class="notification is-danger" x-text="error"></div>
+</div>
+{% endblock %}

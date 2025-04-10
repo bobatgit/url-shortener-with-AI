@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   app:
@@ -7,13 +7,5 @@ services:
       - "8000:8000"
     volumes:
       - ./data:/app/data
-      - ./app:/app/app  # For development hot-reload
-    environment:
-      - ENVIRONMENT=${ENVIRONMENT:-development}
-      - DATABASE_URL=sqlite:///./data/urls.db
+      - .:/app # For development hot-reload
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/monitoring/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3

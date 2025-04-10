@@ -1,58 +1,39 @@
-from sqlalchemy import create_engine, Column, Integer, String, DateTime, Boolean
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from datetime import datetime
-from .config import settings
+import sqlite3
+from contextlib import contextmanager
+from pathlib import Path
 
-engine = create_engine(
-    settings.database_url,
-    connect_args={"check_same_thread": False} if settings.database_url.startswith("sqlite") else {}
-)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
-
-class URL(Base):
-    __tablename__ = "urls"
-    id = Column(Integer, primary_key=True)
-    short_code = Column(String, unique=True, index=True)
-    original_url = Column(String)
-    title = Column(String, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    expires_at = Column(DateTime, nullable=True)
-    clicks = Column(Integer, default=0)
-    is_custom = Column(Boolean, default=False)
-
-class Setting(Base):
-    __tablename__ = "settings"
-    id = Column(Integer, primary_key=True)
-    setting_name = Column(String, unique=True)
-    setting_value = Column(String)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+DATABASE_PATH = Path("data/urls.db")
 
 def init_db():
-    if settings.environment == "testing":
-        # For testing, we want to drop and recreate all tables
-        Base.metadata.drop_all(bind=engine)
-    
-    Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
-    try:
-        # Insert default settings if they don't exist
-        defaults = [
-            ("default_expiry_days", str(settings.default_code_length)),
-            ("short_code_length", str(settings.default_code_length)),
-            ("allow_custom_urls", "true")
-        ]
-        for name, value in defaults:
-            if not db.query(Setting).filter(Setting.setting_name == name).first():
-                db.add(Setting(setting_name=name, setting_value=value))
-        db.commit()
-    finally:
-        db.close()
+    DATABASE_PATH.parent.mkdir(exist_ok=True)
+    with get_db() as db:
+        db.executescript("""
+            CREATE TABLE IF NOT EXISTS urls (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                short_code TEXT UNIQUE NOT NULL,
+                original_url TEXT NOT NULL,
+                title TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                expires_at TIMESTAMP,
+                click_count INTEGER DEFAULT 0,
+                is_custom BOOLEAN DEFAULT 0
+            );
+            CREATE INDEX IF NOT EXISTS idx_short_code ON urls(short_code);
+            CREATE INDEX IF NOT EXISTS idx_expires_at ON urls(expires_at);
+            
+            CREATE TABLE IF NOT EXISTS settings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                setting_name TEXT UNIQUE NOT NULL,
+                setting_value TEXT NOT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        """)
 
-def get_session():
-    db = SessionLocal()
+@contextmanager
+def get_db():
+    conn = sqlite3.connect(DATABASE_PATH)
+    conn.row_factory = sqlite3.Row
     try:
-        yield db
+        yield conn
     finally:
-        db.close()
+        conn.close()

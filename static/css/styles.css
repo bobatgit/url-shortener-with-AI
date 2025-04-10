@@ -1,0 +1,16 @@
+.section {
+    padding: 2rem 1.5rem;
+}
+
+.notification {
+    margin-top: 1rem;
+}
+
+.table-container {
+    margin-top: 1rem;
+}
+
+.box {
+    max-width: 600px;
+    margin: 0 auto;
+}
