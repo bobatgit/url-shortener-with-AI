@@ -20,27 +20,30 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual Environment
-venv/
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Environment
 .env
+.venv
+env/
 venv/
 ENV/
-env/
-
-# IDE
-.vscode/
-.idea/
+.env.*
+!.env.example
 
 # Database
-*.db
-*.sqlite3
+data/*.db
 
-# Logs
-*.log
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
 
-# Environment variables
-.env
-
-# System Files
+# OS
 .DS_Store
 Thumbs.db

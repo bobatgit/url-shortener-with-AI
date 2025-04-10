@@ -1,7 +1,22 @@
 fastapi==0.103.1
 uvicorn==0.23.2
 jinja2==3.1.2
+aiofiles==23.1.0
 python-multipart==0.0.6
 pydantic==2.3.0
-sqlalchemy==2.0.21
-aiofiles==23.1.0
+pydantic-settings==2.0.3
+sqlalchemy==2.0.20
+httpx==0.24.1
+psutil==5.9.5
+python-jose[cryptography]==3.3.0
+bcrypt==4.0.1
+alembic==1.12.0
+click==8.1.7
+prometheus-client==0.17.1
+python-json-logger==2.0.7
+structlog==23.1.0
+# Testing dependencies
+pytest==7.4.2
+pytest-cov==4.1.0
+pytest-env==1.0.1
+requests==2.31.0

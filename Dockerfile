@@ -1,38 +1,57 @@
-# Use Python slim image
-FROM python:3.11-slim
+# syntax=docker/dockerfile:1.4
 
-# Create non-root user
-RUN useradd -m -u 1000 appuser
+# Base image with common dependencies
+FROM python:3.11-slim AS base
 
-# Set working directory
 WORKDIR /app
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    POETRY_VERSION=1.5.1 \
+    POETRY_HOME="/opt/poetry" \
+    POETRY_VIRTUALENVS_CREATE=false
 
-# Environment variables
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    DATABASE_PATH=sqlite:///./data/urls.db
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
     gcc \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install Python packages
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Development image
+FROM base AS development
 
-# Create data directory and set permissions
-RUN mkdir -p /app/data && chown -R appuser:appuser /app
+COPY requirements*.txt ./
+RUN pip install -r requirements-dev.txt
 
-# Copy application code
 COPY . .
-RUN chown -R appuser:appuser /app
+RUN chmod +x scripts/*.sh
 
-# Switch to non-root user
+CMD ["uvicorn", "app.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+
+# Production build stage
+FROM base AS builder
+
+COPY requirements.txt .
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /wheels -r requirements.txt
+
+# Production image
+FROM python:3.11-slim AS production
+
+WORKDIR /app
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+RUN adduser --disabled-password --gecos "" appuser
+
+COPY --from=builder /wheels /wheels
+RUN pip install --no-cache-dir /wheels/* \
+    && rm -rf /wheels
+
+COPY --chown=appuser:appuser . .
+RUN chmod +x scripts/*.sh
+
 USER appuser
 
-# Expose port
-EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/monitoring/health || exit 1
 
-# Run application
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

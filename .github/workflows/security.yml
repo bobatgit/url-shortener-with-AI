@@ -1,0 +1,33 @@
+name: Security Scan
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  security-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+          
+      - name: Install safety
+        run: pip install safety
+        
+      - name: Run safety check
+        run: safety check -r requirements.txt -r requirements-dev.txt
+        
+      - name: Run Bandit
+        run: |
+          pip install bandit
+          bandit -r app/ -ll
+          
+      - name: Run pip-audit
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt -r requirements-dev.txt
