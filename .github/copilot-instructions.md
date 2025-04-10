@@ -25,18 +25,15 @@ The URL shortener application is a lightweight web app with a clean separation b
 - **Pydantic**: Data validation and settings management using Python type annotations
 - **Uvicorn**: ASGI server implementation for running the FastAPI application
 
-
 ### Frontend
 
 - **Bulma**: Lightweight, responsive CSS framework based on Flexbox
 - **Alpine.js**: Minimal JavaScript framework for adding interactive behavior directly in HTML markup
 - **HTML/CSS**: Standard markup and styling languages for web interfaces
 
-
 ### Deployment
 
 - **Docker**: Containerization platform for packaging the application and its dependencies
-
 
 ## Project Setup
 
@@ -45,7 +42,6 @@ The URL shortener application is a lightweight web app with a clean separation b
 ```
 url-shortener/
 ├── app/
-│   ├── __init__.py
 │   ├── main.py              # FastAPI application entry point
 │   ├── config.py            # Application configuration
 │   ├── models.py            # Database models
@@ -77,7 +73,6 @@ url-shortener/
 └── README.md
 ```
 
-
 ## Database Schema
 
 The SQLite database will contain two main tables:
@@ -100,7 +95,6 @@ CREATE INDEX idx_short_code ON urls(short_code);
 CREATE INDEX idx_expires_at ON urls(expires_at);
 ```
 
-
 ### 2. Settings Table
 
 ```sql
@@ -116,7 +110,6 @@ INSERT INTO settings (setting_name, setting_value) VALUES ('default_expiry_days'
 INSERT INTO settings (setting_name, setting_value) VALUES ('short_code_length', '6');
 INSERT INTO settings (setting_name, setting_value) VALUES ('allow_custom_urls', 'true');
 ```
-
 
 ## Docker Configuration
 
@@ -150,7 +143,6 @@ EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-
 ### requirements.txt
 
 ```plaintext
@@ -161,7 +153,6 @@ aiofiles==23.1.0
 python-multipart==0.0.6
 pydantic==2.3.0
 ```
-
 
 ## Best Practices and Style Guidelines
 
