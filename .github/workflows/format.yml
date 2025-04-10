@@ -39,7 +39,7 @@ jobs:
 
       - name: Upload format report
         if: failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: format-report
           path: format_report.txt
